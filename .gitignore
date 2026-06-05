@@ -1,0 +1,27 @@
+# Build output
+ping_scan.exe
+*.pdb
+*.obj
+bin/
+obj/
+
+# Local runtime data
+devices.xml
+history.dat
+history.csv
+history_reset.txt
+users.xml
+account_audit.log
+
+# Local imported/exported data
+plantilla_dispositivos.csv
+*.xlsx
+
+# OS/editor noise
+Thumbs.db
+Desktop.ini
+.vs/
+
+# Local tooling
+PortableGit/
+PortableGit-*.7z.exe
