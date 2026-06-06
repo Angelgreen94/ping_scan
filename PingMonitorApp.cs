@@ -867,7 +867,7 @@ namespace SeguritechPingMonitor
             { "Configurar cuenta", "Account settings" },
             { "Cerrar sesion", "Sign out" },
             { "Monitor de dispositivos", "Device monitor" },
-            { "Dashboard de disponibilidad", "Availability dashboard" },
+            { "Disponibilidad de la red", "Network availability" },
             { "Intervalo (seg)", "Interval (sec)" },
             { "Timeout (ms)", "Timeout (ms)" },
             { "Buscar", "Search" },
@@ -2008,6 +2008,7 @@ namespace SeguritechPingMonitor
             title.AutoSize = false;
             title.Font = new Font("Segoe UI Semibold", 16F, FontStyle.Bold);
             title.ForeColor = TextMain;
+            title.BackColor = Color.Transparent;
             title.SetBounds(28, 16, 360, 32);
             header.Controls.Add(title);
 
@@ -2015,6 +2016,7 @@ namespace SeguritechPingMonitor
             _subtitleLabel.Text = _profile.Username + "  |  " + UserStore.NormalizeRole(_profile.Role);
             _subtitleLabel.AutoSize = false;
             _subtitleLabel.ForeColor = TextMuted;
+            _subtitleLabel.BackColor = Color.Transparent;
             _subtitleLabel.SetBounds(30, 50, 430, 22);
             header.Controls.Add(_subtitleLabel);
 
@@ -2058,12 +2060,14 @@ namespace SeguritechPingMonitor
             governance.Text = canChangeOperational ? "Cambios registrados en account_audit.log" : "Parametros operativos restringidos por rol";
             governance.AutoSize = false;
             governance.ForeColor = TextMuted;
+            governance.BackColor = Color.Transparent;
             governance.SetBounds(210, 328, 430, 24);
             Controls.Add(governance);
 
             _statusLabel = new Label();
             _statusLabel.AutoSize = false;
             _statusLabel.ForeColor = TextMuted;
+            _statusLabel.BackColor = Color.Transparent;
             _statusLabel.SetBounds(32, ClientSize.Height - 64, 390, 24);
             _statusLabel.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
             Controls.Add(_statusLabel);
@@ -2124,6 +2128,7 @@ namespace SeguritechPingMonitor
             label.Text = labelText;
             label.AutoSize = false;
             label.ForeColor = TextMuted;
+            label.BackColor = Color.Transparent;
             label.SetBounds(x, y - 22, width, 18);
             Controls.Add(label);
 
@@ -2146,6 +2151,7 @@ namespace SeguritechPingMonitor
             label.Text = labelText;
             label.AutoSize = false;
             label.ForeColor = TextMuted;
+            label.BackColor = Color.Transparent;
             label.SetBounds(x, y - 22, width, 18);
             Controls.Add(label);
 
@@ -2176,6 +2182,7 @@ namespace SeguritechPingMonitor
             label.Text = labelText;
             label.AutoSize = false;
             label.ForeColor = TextMuted;
+            label.BackColor = Color.Transparent;
             label.SetBounds(x, y - 22, width + 24, 18);
             Controls.Add(label);
 
@@ -2209,14 +2216,33 @@ namespace SeguritechPingMonitor
                 bool english = IsEnglishDialog();
                 dialog.Title = UiText.Pick(english, "Seleccionar foto de perfil", "Select profile photo");
                 dialog.Filter = UiText.Pick(english, "Imagenes (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp|Todos los archivos (*.*)|*.*", "Images (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp|All files (*.*)|*.*");
+                dialog.RestoreDirectory = true;
                 if (dialog.ShowDialog(this) != DialogResult.OK)
                 {
+                    return;
+                }
+
+                try
+                {
+                    using (Image image = Image.FromFile(dialog.FileName))
+                    {
+                        if (image.Width <= 0 || image.Height <= 0)
+                        {
+                            ShowStatus(UiText.Pick(english, "La imagen seleccionada no es valida.", "The selected image is not valid."), true);
+                            return;
+                        }
+                    }
+                }
+                catch
+                {
+                    ShowStatus(UiText.Pick(english, "No se pudo cargar la imagen seleccionada.", "The selected image could not be loaded."), true);
                     return;
                 }
 
                 _photoText.Text = dialog.FileName;
                 _avatarPreview.ImagePath = dialog.FileName;
                 _avatarPreview.Invalidate();
+                ShowStatus(UiText.Pick(english, "Foto seleccionada. Presione Guardar para aplicarla.", "Photo selected. Press Save to apply it."), false);
             }
         }
 
@@ -2377,9 +2403,7 @@ namespace SeguritechPingMonitor
             try
             {
                 string fileName = Path.GetFileName(imagePath);
-                return String.Equals(fileName, "ping_scan_square.png", StringComparison.OrdinalIgnoreCase)
-                    || String.Equals(fileName, "ping_scan_logo.png", StringComparison.OrdinalIgnoreCase)
-                    || String.Equals(fileName, "account_avatar_default.png", StringComparison.OrdinalIgnoreCase);
+                return String.Equals(fileName, "account_avatar_default.png", StringComparison.OrdinalIgnoreCase);
             }
             catch
             {
@@ -3209,7 +3233,7 @@ namespace SeguritechPingMonitor
             _monitorPage = new TabPage("Monitor");
             _monitorPage.BackColor = AppBackground;
             TechStyle.EnableDoubleBuffer(_monitorPage);
-            _dashboardPage = new TabPage("Dashboard " + _dashboardWindowDays.ToString(CultureInfo.InvariantCulture) + " dias");
+            _dashboardPage = new TabPage("Disponibilidad");
             _dashboardPage.BackColor = AppBackground;
             TechStyle.EnableDoubleBuffer(_dashboardPage);
             _tabs.TabPages.Add(_monitorPage);
@@ -3589,7 +3613,7 @@ namespace SeguritechPingMonitor
 
             if (_dashboardPage != null)
             {
-                _dashboardPage.Text = "Dashboard " + _dashboardWindowDays.ToString(CultureInfo.InvariantCulture) + (IsEnglishUi() ? " days" : " dias");
+                _dashboardPage.Text = T("Disponibilidad", "Availability");
             }
 
             if (_dashboardSummaryLabel != null)
@@ -3673,7 +3697,7 @@ namespace SeguritechPingMonitor
 
             if (_dashboardPage != null)
             {
-                _dashboardPage.Text = "Dashboard " + _dashboardWindowDays.ToString(CultureInfo.InvariantCulture) + T(" dias", " days");
+                _dashboardPage.Text = T("Disponibilidad", "Availability");
             }
         }
 
@@ -3952,7 +3976,7 @@ namespace SeguritechPingMonitor
             dashboardLayout.Controls.Add(header, 0, 0);
 
             Label title = new Label();
-            title.Text = "Dashboard de disponibilidad";
+            title.Text = "Disponibilidad de la red";
             title.Font = new Font("Segoe UI Semibold", 15F, FontStyle.Bold);
             title.AutoSize = false;
             title.ForeColor = TextMain;
@@ -4269,7 +4293,7 @@ namespace SeguritechPingMonitor
         private void ArrangeMonitorHeader(Control header, Control logo, Label title, Label summary, Label lastRun, FlowLayoutPanel toolbar)
         {
             int width = Math.Max(1, header.ClientSize.Width);
-            float desiredHeight = width < 1180 ? 228F : 206F;
+            float desiredHeight = width < 1180 ? 238F : 220F;
             if (_monitorHeaderRowStyle != null && Math.Abs(_monitorHeaderRowStyle.Height - desiredHeight) > 0.5F)
             {
                 _monitorHeaderRowStyle.Height = desiredHeight;
@@ -4279,8 +4303,8 @@ namespace SeguritechPingMonitor
                 }
             }
 
-            int logoWidth = width < 1120 ? 260 : 330;
-            int logoHeight = width < 1120 ? 74 : 92;
+            int logoWidth = width < 760 ? 300 : width < 1120 ? 350 : width < 1450 ? 430 : 490;
+            int logoHeight = Math.Max(78, (int)Math.Round(logoWidth / 4.2F));
             logo.SetBounds(14, 18, logoWidth, logoHeight);
 
             int textX = logo.Right + 26;
@@ -4296,12 +4320,14 @@ namespace SeguritechPingMonitor
                 title.SetBounds(textX, 10, textWidth, 28);
                 summary.SetBounds(textX + 4, 43, textWidth, 20);
                 lastRun.SetBounds(textX + 4, 64, textWidth, 20);
-                toolbar.SetBounds(Math.Max(18, textX), 128, Math.Max(300, width - Math.Max(18, textX) - 18), Math.Max(82, header.ClientSize.Height - 132));
+                int toolbarTop = Math.Max(132, logo.Bottom + 12);
+                toolbar.SetBounds(Math.Max(18, textX), toolbarTop, Math.Max(300, width - Math.Max(18, textX) - 18), Math.Max(82, header.ClientSize.Height - toolbarTop - 8));
             }
             else
             {
                 int toolbarWidth = Math.Min(920, Math.Max(620, width - textX - 210));
-                toolbar.SetBounds(width - toolbarWidth - 18, 124, toolbarWidth, Math.Max(68, header.ClientSize.Height - 134));
+                int toolbarTop = Math.Max(132, logo.Bottom + 10);
+                toolbar.SetBounds(width - toolbarWidth - 18, toolbarTop, toolbarWidth, Math.Max(68, header.ClientSize.Height - toolbarTop - 10));
 
                 int textWidth = Math.Max(220, width - textX - 36);
                 title.SetBounds(textX, 22, textWidth, 32);
@@ -4406,8 +4432,8 @@ namespace SeguritechPingMonitor
                 }
             }
 
-            int logoWidth = width < 1100 ? 260 : 330;
-            int logoHeight = width < 1100 ? 74 : 92;
+            int logoWidth = width < 1100 ? 280 : width < 1500 ? 350 : 430;
+            int logoHeight = Math.Max(76, (int)Math.Round(logoWidth / 4.2F));
             logo.SetBounds(18, 18, logoWidth, logoHeight);
             ArrangeUserMenuButton(accountButton, header, 6);
 
@@ -7377,9 +7403,9 @@ namespace SeguritechPingMonitor
             {
                 if (logo != null)
                 {
-                    Rectangle logoBox = new Rectangle(92, 92, 278, 76);
+                    Rectangle logoBox = new Rectangle(82, 82, 370, 96);
                     DrawReportRoundRect(g, logoBox, 22, Color.FromArgb(30, 255, 255, 255), Color.FromArgb(90, cyan));
-                    g.DrawImage(logo, FitImageRect(logo.Size, new Rectangle(112, 104, 238, 52)));
+                    g.DrawImage(logo, FitImageRect(logo.Size, new Rectangle(106, 96, 322, 68)));
                 }
             }
 
@@ -7464,9 +7490,9 @@ namespace SeguritechPingMonitor
             {
                 if (logo != null)
                 {
-                    Rectangle logoBox = new Rectangle(80, 68, 240, 70);
+                    Rectangle logoBox = new Rectangle(70, 58, 320, 82);
                     DrawReportRoundRect(g, logoBox, 18, Color.FromArgb(30, 255, 255, 255), Color.FromArgb(90, cyan));
-                    g.DrawImage(logo, FitImageRect(logo.Size, new Rectangle(100, 80, 200, 46)));
+                    g.DrawImage(logo, FitImageRect(logo.Size, new Rectangle(92, 70, 276, 58)));
                 }
             }
 
@@ -7474,7 +7500,7 @@ namespace SeguritechPingMonitor
             using (Font subtitle = new Font("Segoe UI", 13F, FontStyle.Regular))
             {
                 DrawReportText(g, "DETALLE DEL DASHBOARD FILTRADO", title, Color.White, new RectangleF(388, 68, 770, 52), StringAlignment.Far);
-                DrawReportText(g, "Datos visibles segun tecnologia, afiliacion e IP / camara", subtitle, Color.FromArgb(211, 230, 255), new RectangleF(388, 126, 770, 30), StringAlignment.Far);
+                DrawReportText(g, "Datos visibles segun tecnologia, afiliacion e IP / dispositivo", subtitle, Color.FromArgb(211, 230, 255), new RectangleF(388, 126, 770, 30), StringAlignment.Far);
             }
 
             DrawReportBand(g, 226, "TABLA DE DISPONIBILIDAD", mint);
@@ -9376,7 +9402,7 @@ namespace SeguritechPingMonitor
 
                 if (Logo != null)
                 {
-                    Rectangle imageRect = new Rectangle(6, 4, Width - 12, Height - 8);
+                    Rectangle imageRect = new Rectangle(4, 3, Width - 8, Height - 6);
                     g.DrawImage(Logo, FitRect(Logo.Size, imageRect));
                 }
             }

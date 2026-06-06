@@ -23,7 +23,7 @@ El ejecutable usa `app_icon.ico` como icono de archivo, ventana y barra de tarea
 7. El intervalo predeterminado es `3600` segundos, es decir, una revision cada hora.
 8. La app inicia el monitoreo automaticamente si ya tiene dispositivos cargados. Tambien puede usar `Iniciar` para dejarla corriendo.
 9. Use `Exportar CSV` para guardar resultados con estado, latencia, ultima revision y fallos.
-10. Abra la pestana `Dashboard 3 dias` para ver disponibilidad por tecnologia, ubicacion/sitio, afiliacion o dispositivo/IP.
+10. Abra la pestana `Disponibilidad` para ver disponibilidad por tecnologia, ubicacion/sitio, afiliacion o dispositivo/IP.
 
 Para mejorar rendimiento con inventarios grandes, la tabla del Monitor no pinta todo el listado completo. Use `Buscar`, `Tipo`, `Ubicacion / sitio` y `Estado` para consultar dispositivos; la vista muestra hasta 500 coincidencias, pero el monitoreo sigue revisando todo el inventario cargado.
 Use `Gestionar dispositivos` para registrar, editar, retirar dispositivos o vaciar el inventario antes de cargar una nueva lista. Use `Reset historial` para limpiar el historial de pings.
