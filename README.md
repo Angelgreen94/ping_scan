@@ -9,7 +9,7 @@ El ejecutable usa `app_icon.ico` como icono de archivo, ventana y barra de tarea
 ## Uso rapido
 
 1. Abra `ping_scan.exe`.
-2. Use `Importar` para cargar un listado `.csv`, `.txt`, `.tsv` o `.xlsx`.
+2. Use `Gestionar dispositivos` > `Importar listado` para cargar un listado `.csv`, `.txt`, `.tsv` o `.xlsx`.
 3. Las columnas reconocidas son:
    - `Nombre` o `Camara`
    - `IP`
@@ -26,7 +26,7 @@ El ejecutable usa `app_icon.ico` como icono de archivo, ventana y barra de tarea
 10. Abra la pestana `Dashboard 3 dias` para ver disponibilidad por tecnologia, ubicacion/sitio, afiliacion o dispositivo/IP.
 
 Para mejorar rendimiento con inventarios grandes, la tabla del Monitor no pinta todo el listado completo. Use `Buscar`, `Tipo`, `Ubicacion / sitio` y `Estado` para consultar dispositivos; la vista muestra hasta 500 coincidencias, pero el monitoreo sigue revisando todo el inventario cargado.
-Use `Eliminar todo` para vaciar el inventario antes de cargar una nueva lista. Use `Reset historial` para limpiar el historial de pings.
+Use `Gestionar dispositivos` para registrar, editar, retirar dispositivos o vaciar el inventario antes de cargar una nueva lista. Use `Reset historial` para limpiar el historial de pings.
 
 El listado local se guarda automaticamente en `devices.xml`, junto al ejecutable.
 
