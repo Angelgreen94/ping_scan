@@ -3246,8 +3246,8 @@ namespace SeguritechPingMonitor
             monitorLayout.ColumnCount = 1;
             monitorLayout.RowCount = 3;
             monitorLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            _monitorFilterRowStyle = new RowStyle(SizeType.Absolute, 92F);
-            _monitorHeaderRowStyle = new RowStyle(SizeType.Absolute, 170F);
+            _monitorFilterRowStyle = new RowStyle(SizeType.Absolute, 54F);
+            _monitorHeaderRowStyle = new RowStyle(SizeType.Absolute, 136F);
             monitorLayout.RowStyles.Add(_monitorFilterRowStyle);
             monitorLayout.RowStyles.Add(_monitorHeaderRowStyle);
             monitorLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
@@ -3255,7 +3255,7 @@ namespace SeguritechPingMonitor
 
             Panel header = new Panel();
             header.Dock = DockStyle.Fill;
-            header.Height = 120;
+            header.Height = 136;
             header.BackColor = Surface;
             TechStyle.AttachSurface(header, Color.FromArgb(12, 32, 64), Color.FromArgb(7, 16, 36), Accent, true);
             header.Padding = new Padding(14, 10, 14, 8);
@@ -3322,7 +3322,7 @@ namespace SeguritechPingMonitor
 
             Panel filters = new Panel();
             filters.Dock = DockStyle.Fill;
-            filters.Height = 56;
+            filters.Height = 54;
             filters.BackColor = SurfaceAlt;
             TechStyle.AttachSurface(filters, Color.FromArgb(15, 37, 68), Color.FromArgb(10, 24, 46), AccentSoft, false);
             filters.Padding = new Padding(14, 11, 14, 8);
@@ -3552,15 +3552,21 @@ namespace SeguritechPingMonitor
 
         private void ArrangeUserMenuButton(UserMenuButton button, Control parent, int top)
         {
+            ArrangeUserMenuButton(button, parent, top, 700);
+        }
+
+        private void ArrangeUserMenuButton(UserMenuButton button, Control parent, int top, int compactBelow)
+        {
             if (button == null || parent == null)
             {
                 return;
             }
 
             const int rightMargin = 12;
-            int width = parent.ClientSize.Width < 700 ? 58 : 190;
+            bool compact = parent.ClientSize.Width < compactBelow;
+            int width = compact ? 58 : 190;
             int height = 44;
-            button.ShowCompact = parent.ClientSize.Width < 700;
+            button.ShowCompact = compact;
             button.SetBounds(Math.Max(18, parent.ClientSize.Width - width - rightMargin), top, width, height);
             button.BringToFront();
         }
@@ -3664,14 +3670,14 @@ namespace SeguritechPingMonitor
 
         private void ApplyButtonLocalization()
         {
-            SetButtonText(_removeButton, T("Gestionar dispositivos", "Manage devices"), 156);
-            SetButtonText(_checkNowButton, T("Revisar ahora", "Check now"), 112);
+            SetButtonText(_removeButton, T("Gestionar dispositivos", "Manage devices"), 140);
+            SetButtonText(_checkNowButton, T("Revisar ahora", "Check now"), 104);
             SetButtonText(_startButton, T("Iniciar", "Start"), 92);
             SetButtonText(_stopButton, T("Detener", "Stop"), 92);
-            SetButtonText(_saveButton, T("Guardar cambios", "Save changes"), 128);
-            SetButtonText(_exportButton, T("Exportar CSV", "Export CSV"), 112);
-            SetButtonText(_resetFailuresButton, T("Limpiar fallos", "Clear failures"), 116);
-            SetButtonText(_resetHistoryButton, T("Reset historial", "Reset history"), 116);
+            SetButtonText(_saveButton, T("Guardar cambios", "Save changes"), 118);
+            SetButtonText(_exportButton, T("Exportar CSV", "Export CSV"), 104);
+            SetButtonText(_resetFailuresButton, T("Limpiar fallos", "Clear failures"), 108);
+            SetButtonText(_resetHistoryButton, T("Reset historial", "Reset history"), 108);
             SetButtonText(_refreshDashboardButton, T("Actualizar", "Refresh"), 106);
             SetButtonText(_downloadDashboardReportButton, T("Descargar reporte", "Download report"), 136);
             SetButtonText(_clearHistoryButton, T("Limpiar historial", "Clear history"), 124);
@@ -3685,7 +3691,7 @@ namespace SeguritechPingMonitor
             }
 
             button.Text = text;
-            button.Width = Math.Max(width, TextRenderer.MeasureText(text, button.Font).Width + 30);
+            button.Width = Math.Max(width, TextRenderer.MeasureText(text, button.Font).Width + 22);
         }
 
         private void ApplyTabLocalization()
@@ -3962,14 +3968,14 @@ namespace SeguritechPingMonitor
             dashboardLayout.ColumnCount = 1;
             dashboardLayout.RowCount = 2;
             dashboardLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            _dashboardHeaderRowStyle = new RowStyle(SizeType.Absolute, 236F);
+            _dashboardHeaderRowStyle = new RowStyle(SizeType.Absolute, 136F);
             dashboardLayout.RowStyles.Add(_dashboardHeaderRowStyle);
             dashboardLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             _dashboardPage.Controls.Add(dashboardLayout);
 
             Panel header = new Panel();
             header.Dock = DockStyle.Fill;
-            header.Height = 236;
+            header.Height = 136;
             header.BackColor = Surface;
             TechStyle.AttachSurface(header, Color.FromArgb(12, 32, 64), Color.FromArgb(7, 16, 36), Accent, true);
             header.Padding = new Padding(14, 10, 14, 8);
@@ -4166,34 +4172,34 @@ namespace SeguritechPingMonitor
         {
             Panel card = new Panel();
             TechStyle.EnableDoubleBuffer(card);
-            card.Width = 200;
-            card.Height = 66;
-            card.Margin = new Padding(0, 0, 12, 0);
+            card.Width = 118;
+            card.Height = 42;
+            card.Margin = new Padding(0, 0, 5, 0);
             card.BackColor = SurfaceAlt;
-            card.Padding = new Padding(12, 7, 12, 6);
+            card.Padding = new Padding(10, 4, 10, 4);
 
             Label titleLabel = new Label();
             titleLabel.Text = title;
             titleLabel.AutoSize = false;
-            titleLabel.SetBounds(12, 8, card.Width - 24, 18);
+            titleLabel.SetBounds(10, 4, card.Width - 20, 15);
             titleLabel.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right;
             titleLabel.ForeColor = TextMuted;
-            titleLabel.Font = new Font("Segoe UI", 8.5F, FontStyle.Regular);
+            titleLabel.Font = new Font("Segoe UI", 8F, FontStyle.Regular);
             card.Controls.Add(titleLabel);
 
             Label valueLabel = new Label();
             valueLabel.Text = "-";
             valueLabel.AutoSize = false;
-            valueLabel.SetBounds(12, 28, card.Width - 24, 30);
+            valueLabel.SetBounds(10, 18, card.Width - 20, 22);
             valueLabel.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right;
             valueLabel.ForeColor = Accent;
-            valueLabel.Font = new Font("Segoe UI Semibold", 15F, FontStyle.Bold);
+            valueLabel.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
             valueLabel.TextAlign = ContentAlignment.MiddleLeft;
             card.Controls.Add(valueLabel);
             card.Resize += delegate
             {
-                titleLabel.SetBounds(12, 8, Math.Max(20, card.ClientSize.Width - 24), 18);
-                valueLabel.SetBounds(12, 28, Math.Max(20, card.ClientSize.Width - 24), 30);
+                titleLabel.SetBounds(10, 4, Math.Max(20, card.ClientSize.Width - 20), 15);
+                valueLabel.SetBounds(10, 18, Math.Max(20, card.ClientSize.Width - 20), 22);
             };
 
             parent.Controls.Add(card);
@@ -4293,7 +4299,18 @@ namespace SeguritechPingMonitor
         private void ArrangeMonitorHeader(Control header, Control logo, Label title, Label summary, Label lastRun, FlowLayoutPanel toolbar)
         {
             int width = Math.Max(1, header.ClientSize.Width);
-            float desiredHeight = width < 1180 ? 238F : 220F;
+            if (header.Parent != null)
+            {
+                width = Math.Max(width, header.Parent.ClientSize.Width);
+            }
+            Form owner = header.FindForm();
+            if (owner != null)
+            {
+                width = Math.Max(width, owner.ClientSize.Width);
+            }
+
+            bool stackControls = width < 1120;
+            float desiredHeight = width < 820 ? 218F : stackControls ? 178F : 156F;
             if (_monitorHeaderRowStyle != null && Math.Abs(_monitorHeaderRowStyle.Height - desiredHeight) > 0.5F)
             {
                 _monitorHeaderRowStyle.Height = desiredHeight;
@@ -4303,36 +4320,36 @@ namespace SeguritechPingMonitor
                 }
             }
 
-            int logoWidth = width < 760 ? 300 : width < 1120 ? 350 : width < 1450 ? 430 : 490;
-            int logoHeight = Math.Max(78, (int)Math.Round(logoWidth / 4.2F));
-            logo.SetBounds(14, 18, logoWidth, logoHeight);
+            int logoWidth = width < 1100 ? 230 : width < 1500 ? 280 : 300;
+            int logoHeight = Math.Max(58, (int)Math.Round(logoWidth / 4.2F));
+            logo.SetBounds(18, 12, logoWidth, logoHeight);
 
             int textX = logo.Right + 26;
-            if (width < 1180)
+            if (stackControls)
             {
+                toolbar.WrapContents = true;
                 int textWidth = Math.Max(260, width - textX - 36);
-                if (width < 760)
+                if (width < 820)
                 {
                     textX = 18;
                     textWidth = Math.Max(260, width - 36);
-                    logo.SetBounds(14, 64, logoWidth, logoHeight);
+                    logo.SetBounds(18, 86, logoWidth, logoHeight);
                 }
-                title.SetBounds(textX, 10, textWidth, 28);
-                summary.SetBounds(textX + 4, 43, textWidth, 20);
-                lastRun.SetBounds(textX + 4, 64, textWidth, 20);
-                int toolbarTop = Math.Max(132, logo.Bottom + 12);
-                toolbar.SetBounds(Math.Max(18, textX), toolbarTop, Math.Max(300, width - Math.Max(18, textX) - 18), Math.Max(82, header.ClientSize.Height - toolbarTop - 8));
+                title.SetBounds(textX, 14, textWidth, 28);
+                summary.SetBounds(textX + 2, 48, textWidth, 20);
+                lastRun.SetBounds(textX + 2, 70, textWidth, 20);
+                toolbar.SetBounds(18, 104, Math.Max(300, width - 36), 66);
             }
             else
             {
-                int toolbarWidth = Math.Min(920, Math.Max(620, width - textX - 210));
-                int toolbarTop = Math.Max(132, logo.Bottom + 10);
-                toolbar.SetBounds(width - toolbarWidth - 18, toolbarTop, toolbarWidth, Math.Max(68, header.ClientSize.Height - toolbarTop - 10));
-
+                toolbar.WrapContents = false;
                 int textWidth = Math.Max(220, width - textX - 36);
-                title.SetBounds(textX, 22, textWidth, 32);
-                summary.SetBounds(textX + 4, 64, textWidth, 20);
-                lastRun.SetBounds(textX + 4, 87, textWidth, 20);
+                title.SetBounds(textX, 14, textWidth, 30);
+                summary.SetBounds(textX + 2, 48, textWidth, 20);
+                lastRun.SetBounds(textX + 2, 70, textWidth, 20);
+
+                int toolbarWidth = Math.Min(1120, Math.Max(920, width - textX - 36));
+                toolbar.SetBounds(width - toolbarWidth - 18, 102, toolbarWidth, 48);
             }
         }
 
@@ -4353,9 +4370,18 @@ namespace SeguritechPingMonitor
             UserMenuButton accountButton)
         {
             int width = Math.Max(1, filters.ClientSize.Width);
-            ArrangeUserMenuButton(accountButton, filters, 6);
+            if (filters.Parent != null)
+            {
+                width = Math.Max(width, filters.Parent.ClientSize.Width);
+            }
+            Form owner = filters.FindForm();
+            if (owner != null)
+            {
+                width = Math.Max(width, owner.ClientSize.Width);
+            }
+            ArrangeUserMenuButton(accountButton, filters, 2, 1480);
             int accountLeft = accountButton == null ? width - 18 : accountButton.Left;
-            float desiredHeight = width < 1540 ? 92F : 56F;
+            float desiredHeight = 54F;
             if (_monitorFilterRowStyle != null && Math.Abs(_monitorFilterRowStyle.Height - desiredHeight) > 0.5F)
             {
                 _monitorFilterRowStyle.Height = desiredHeight;
@@ -4365,40 +4391,84 @@ namespace SeguritechPingMonitor
                 }
             }
 
-            if (width < 1540)
-            {
-                int y1 = 14;
-                int y2 = 52;
-                intervalLabel.SetBounds(18, y1 + 4, 92, 20);
-                intervalInput.SetBounds(113, y1, 70, 24);
-                timeoutLabel.SetBounds(206, y1 + 4, 76, 20);
-                timeoutInput.SetBounds(286, y1, 80, 24);
-                searchLabel.SetBounds(392, y1 + 4, 45, 20);
-                searchText.SetBounds(440, y1, Math.Max(160, Math.Min(340, accountLeft - 458)), 24);
+            bool veryTight = width < 1120;
+            bool tight = width < 1380;
+            int y = 12;
+            int x = 18;
+            int pairGap = veryTight ? 4 : 6;
+            int minGroupGap = veryTight ? 8 : tight ? 12 : 18;
+            int maxGroupGap = veryTight ? 12 : tight ? 20 : 30;
+            int rightLimit = Math.Max(x + 760, accountLeft - (veryTight ? 24 : tight ? 32 : 40));
+            int availableWidth = Math.Max(760, rightLimit - x);
 
-                typeLabel.SetBounds(18, y2 + 4, 34, 20);
-                typeFilter.SetBounds(58, y2, 154, 24);
-                subcenterLabel.SetBounds(238, y2 + 4, 112, 20);
-                subcenterFilter.SetBounds(354, y2, Math.Max(130, Math.Min(180, width - 700)), 24);
-                statusLabel.SetBounds(560, y2 + 4, 52, 20);
-                statusFilter.SetBounds(616, y2, 145, 24);
-            }
-            else
-            {
-                int y = 14;
-                intervalLabel.SetBounds(18, y + 4, 92, 20);
-                intervalInput.SetBounds(113, y, 70, 24);
-                timeoutLabel.SetBounds(202, y + 4, 76, 20);
-                timeoutInput.SetBounds(282, y, 80, 24);
-                searchLabel.SetBounds(388, y + 4, 45, 20);
-                searchText.SetBounds(435, y, 240, 24);
-                typeLabel.SetBounds(695, y + 4, 34, 20);
-                typeFilter.SetBounds(730, y, 150, 24);
-                subcenterLabel.SetBounds(900, y + 4, 112, 20);
-                subcenterFilter.SetBounds(1016, y, 130, 24);
-                statusLabel.SetBounds(1164, y + 4, 52, 20);
-                statusFilter.SetBounds(1220, y, 135, 24);
-            }
+            intervalLabel.AutoSize = false;
+            timeoutLabel.AutoSize = false;
+            searchLabel.AutoSize = false;
+            typeLabel.AutoSize = false;
+            subcenterLabel.AutoSize = false;
+            statusLabel.AutoSize = false;
+
+            int intervalLabelWidth = veryTight ? 78 : tight ? 86 : 92;
+            int intervalInputWidth = veryTight ? 58 : tight ? 64 : 70;
+            int timeoutLabelWidth = veryTight ? 68 : tight ? 72 : 76;
+            int timeoutInputWidth = veryTight ? 62 : tight ? 68 : 80;
+            int searchLabelWidth = veryTight ? 42 : 45;
+            int typeLabelWidth = veryTight ? 30 : 34;
+            int subcenterLabelWidth = veryTight ? 70 : tight ? 86 : 112;
+            int statusLabelWidth = veryTight ? 44 : 52;
+
+            int searchWidth = veryTight ? 70 : tight ? 105 : 180;
+            int typeWidth = veryTight ? 76 : tight ? 90 : 132;
+            int subcenterWidth = veryTight ? 80 : tight ? 98 : 128;
+            int statusWidth = veryTight ? 72 : tight ? 88 : 122;
+
+            int fixedWidth = intervalLabelWidth + intervalInputWidth
+                + timeoutLabelWidth + timeoutInputWidth
+                + searchLabelWidth + searchWidth
+                + typeLabelWidth + typeWidth
+                + subcenterLabelWidth + subcenterWidth
+                + statusLabelWidth + statusWidth
+                + (pairGap * 6)
+                + (minGroupGap * 5);
+            int extra = Math.Max(0, availableWidth - fixedWidth);
+            int groupGap = minGroupGap + Math.Min(maxGroupGap - minGroupGap, extra / 5);
+            extra -= (groupGap - minGroupGap) * 5;
+
+            int add = Math.Min(extra, veryTight ? 22 : tight ? 52 : 160);
+            searchWidth += add;
+            extra -= add;
+            add = Math.Min(extra, veryTight ? 10 : tight ? 22 : 28);
+            typeWidth += add;
+            extra -= add;
+            add = Math.Min(extra, veryTight ? 18 : tight ? 36 : 48);
+            subcenterWidth += add;
+            extra -= add;
+            add = Math.Min(extra, veryTight ? 14 : tight ? 28 : 38);
+            statusWidth += add;
+
+            intervalLabel.SetBounds(x, y + 4, intervalLabelWidth, 20);
+            x += intervalLabelWidth + pairGap;
+            intervalInput.SetBounds(x, y, intervalInputWidth, 24);
+            x += intervalInputWidth + groupGap;
+            timeoutLabel.SetBounds(x, y + 4, timeoutLabelWidth, 20);
+            x += timeoutLabelWidth + pairGap;
+            timeoutInput.SetBounds(x, y, timeoutInputWidth, 24);
+            x += timeoutInputWidth + groupGap;
+            searchLabel.SetBounds(x, y + 4, searchLabelWidth, 20);
+            x += searchLabelWidth + pairGap;
+            searchText.SetBounds(x, y, searchWidth, 24);
+            x += searchWidth + groupGap;
+            typeLabel.SetBounds(x, y + 4, typeLabelWidth, 20);
+            x += typeLabelWidth + pairGap;
+            typeFilter.SetBounds(x, y, typeWidth, 24);
+            x += typeWidth + groupGap;
+            subcenterLabel.SetBounds(x, y + 4, subcenterLabelWidth, 20);
+            x += subcenterLabelWidth + pairGap;
+            subcenterFilter.SetBounds(x, y, subcenterWidth, 24);
+            x += subcenterWidth + groupGap;
+            statusLabel.SetBounds(x, y + 4, statusLabelWidth, 20);
+            x += statusLabelWidth + pairGap;
+            statusFilter.SetBounds(x, y, statusWidth, 24);
         }
 
         private void ArrangeDashboardHeader(
@@ -4421,8 +4491,18 @@ namespace SeguritechPingMonitor
             UserMenuButton accountButton)
         {
             int width = Math.Max(1, header.ClientSize.Width);
-            bool stackTopControls = width < 1180;
-            float desiredHeight = width < 920 ? 368F : stackTopControls ? 346F : width < 1380 ? 306F : 276F;
+            if (header.Parent != null)
+            {
+                width = Math.Max(width, header.Parent.ClientSize.Width);
+            }
+            Form owner = header.FindForm();
+            if (owner != null)
+            {
+                width = Math.Max(width, owner.ClientSize.Width);
+            }
+
+            bool stackTopControls = width < 1040;
+            float desiredHeight = stackTopControls ? 190F : 136F;
             if (_dashboardHeaderRowStyle != null && Math.Abs(_dashboardHeaderRowStyle.Height - desiredHeight) > 0.5F)
             {
                 _dashboardHeaderRowStyle.Height = desiredHeight;
@@ -4432,34 +4512,35 @@ namespace SeguritechPingMonitor
                 }
             }
 
-            int logoWidth = width < 1100 ? 280 : width < 1500 ? 350 : 430;
-            int logoHeight = Math.Max(76, (int)Math.Round(logoWidth / 4.2F));
-            logo.SetBounds(18, 18, logoWidth, logoHeight);
-            ArrangeUserMenuButton(accountButton, header, 6);
+            int logoWidth = width < 1100 ? 220 : width < 1500 ? 260 : 280;
+            int logoHeight = Math.Max(58, (int)Math.Round(logoWidth / 4.2F));
+            logo.SetBounds(18, 10, logoWidth, logoHeight);
+            ArrangeUserMenuButton(accountButton, header, 2, 1380);
 
-            actions.Width = stackTopControls ? Math.Max(300, width - 36) : 430;
-            actions.Height = 72;
+            actions.WrapContents = stackTopControls;
+            actions.Width = stackTopControls ? Math.Max(300, width - 36) : width < 1320 ? 400 : 430;
+            actions.Height = 38;
             int accountLeft = accountButton == null ? width - 18 : accountButton.Left;
 
             int textX = logo.Right + 28;
             int textRight = stackTopControls ? accountLeft - 24 : accountLeft - actions.Width - 40;
             int textWidth = Math.Max(220, textRight - textX);
-            title.SetBounds(textX, 22, textWidth, 32);
-            summary.SetBounds(textX, 64, textWidth, 24);
+            title.SetBounds(textX, 14, textWidth, 30);
+            summary.SetBounds(textX, 48, textWidth, 22);
 
             if (stackTopControls)
             {
-                actions.SetBounds(18, 118, actions.Width, 44);
+                actions.SetBounds(18, 82, actions.Width, 38);
             }
             else
             {
-                actions.SetBounds(Math.Max(18, accountLeft - actions.Width - 16), 24, actions.Width, 72);
+                actions.SetBounds(Math.Max(18, accountLeft - actions.Width - 16), 18, actions.Width, 38);
             }
 
-            if (width < 1380)
+            if (stackTopControls)
             {
-                int y1 = stackTopControls ? 178 : 132;
-                int y2 = stackTopControls ? 212 : 166;
+                int y1 = 122;
+                int y2 = 152;
                 groupLabel.SetBounds(18, y1 + 4, 55, 22);
                 groupFilter.SetBounds(76, y1, 126, 24);
                 technologyLabel.SetBounds(220, y1 + 4, 72, 22);
@@ -4470,22 +4551,25 @@ namespace SeguritechPingMonitor
                 affiliationFilter.SetBounds(92, y2, 132, 24);
                 searchLabel.SetBounds(244, y2 + 4, 118, 22);
                 searchText.SetBounds(378, y2, Math.Min(260, width - 406), 24);
-                kpis.SetBounds(18, stackTopControls ? 258 : 212, Math.Max(260, width - 36), 76);
+                kpis.SetBounds(18, 0, 0, 0);
             }
             else
             {
-                int y = 134;
-                groupLabel.SetBounds(18, y + 4, 55, 22);
-                groupFilter.SetBounds(76, y, 126, 24);
-                technologyLabel.SetBounds(226, y + 4, 72, 22);
-                technologyFilter.SetBounds(304, y, 150, 24);
-                subcenterLabel.SetBounds(478, y + 4, 112, 22);
-                subcenterFilter.SetBounds(594, y, 135, 24);
-                affiliationLabel.SetBounds(748, y + 4, 68, 22);
-                affiliationFilter.SetBounds(822, y, 135, 24);
-                searchLabel.SetBounds(978, y + 4, 118, 22);
-                searchText.SetBounds(1112, y, Math.Max(80, Math.Min(190, width - 1344)), 24);
-                kpis.SetBounds(18, 178, Math.Max(260, width - 36), 76);
+                int y1 = 76;
+                int y2 = 102;
+                groupLabel.SetBounds(18, y1 + 4, 55, 22);
+                groupFilter.SetBounds(76, y1, 126, 24);
+                technologyLabel.SetBounds(218, y1 + 4, 72, 22);
+                technologyFilter.SetBounds(292, y1, 138, 24);
+                subcenterLabel.SetBounds(448, y1 + 4, 112, 22);
+                subcenterFilter.SetBounds(564, y1, 126, 24);
+                affiliationLabel.SetBounds(18, y2 + 4, 68, 22);
+                affiliationFilter.SetBounds(92, y2, 126, 24);
+                searchLabel.SetBounds(238, y2 + 4, 118, 22);
+                searchText.SetBounds(360, y2, Math.Min(260, Math.Max(180, width - 1010)), 24);
+
+                int kpiLeft = Math.Max(704, width - 580);
+                kpis.SetBounds(kpiLeft, 78, Math.Max(260, width - kpiLeft - 18), 44);
             }
         }
 
@@ -4497,11 +4581,9 @@ namespace SeguritechPingMonitor
             }
 
             int visibleRows = CountDashboardVisualRows(_currentDashboardStats);
-            int subcenterRows = CountDashboardVisualRows(_currentDashboardSubcenterStats);
             int minWidth = 1120;
             int availabilityHeight = 170 + (Math.Max(visibleRows, 8) * 54);
-            int subcenterHeight = 520 + (Math.Max(subcenterRows, 8) * 48);
-            int minHeight = Math.Max(720, Math.Max(availabilityHeight, subcenterHeight));
+            int minHeight = Math.Max(720, availabilityHeight);
             int width = Math.Max(minWidth, _dashboardScrollPanel.ClientSize.Width);
             int height = Math.Max(minHeight, _dashboardScrollPanel.ClientSize.Height);
 
@@ -9461,11 +9543,21 @@ namespace SeguritechPingMonitor
             private string _affiliationFilter;
             private string _searchFilter;
             private bool _englishUi;
+            private int _subcenterScrollOffset;
+            private int _subcenterMaxScroll;
+            private Rectangle _subcenterScrollViewport;
+            private Rectangle _subcenterScrollTrack;
+            private Rectangle _subcenterScrollThumb;
+            private bool _draggingSubcenterScroll;
+            private int _subcenterDragStartY;
+            private int _subcenterDragStartOffset;
 
             public DashboardView()
             {
                 DoubleBuffered = true;
                 ResizeRedraw = true;
+                SetStyle(ControlStyles.Selectable, true);
+                TabStop = true;
                 _stats = new List<DashboardStats>();
                 _subcenterStats = new List<DashboardStats>();
                 _total = new DashboardStats();
@@ -9495,7 +9587,95 @@ namespace SeguritechPingMonitor
                 _subcenterFilter = String.IsNullOrWhiteSpace(subcenterFilter) ? "Todas" : subcenterFilter;
                 _affiliationFilter = String.IsNullOrWhiteSpace(affiliationFilter) ? "Todas" : affiliationFilter;
                 _searchFilter = String.IsNullOrWhiteSpace(searchFilter) ? "" : searchFilter;
+                ClampSubcenterScrollOffset();
                 Invalidate();
+            }
+
+            protected override void OnMouseEnter(EventArgs e)
+            {
+                if (CanFocus)
+                {
+                    Focus();
+                }
+
+                base.OnMouseEnter(e);
+            }
+
+            protected override void OnMouseWheel(MouseEventArgs e)
+            {
+                if (_subcenterMaxScroll > 0
+                    && (_subcenterScrollViewport.Contains(e.Location) || _subcenterScrollTrack.Contains(e.Location)))
+                {
+                    int lines = Math.Max(1, SystemInformation.MouseWheelScrollLines);
+                    int step = Math.Max(36, lines * 18);
+                    SetSubcenterScrollOffset(_subcenterScrollOffset - (Math.Sign(e.Delta) * step));
+                    HandledMouseEventArgs handled = e as HandledMouseEventArgs;
+                    if (handled != null)
+                    {
+                        handled.Handled = true;
+                    }
+
+                    return;
+                }
+
+                base.OnMouseWheel(e);
+            }
+
+            protected override void OnMouseDown(MouseEventArgs e)
+            {
+                if (CanFocus)
+                {
+                    Focus();
+                }
+
+                if (e.Button == MouseButtons.Left && _subcenterMaxScroll > 0)
+                {
+                    if (_subcenterScrollThumb.Contains(e.Location))
+                    {
+                        _draggingSubcenterScroll = true;
+                        _subcenterDragStartY = e.Y;
+                        _subcenterDragStartOffset = _subcenterScrollOffset;
+                        Capture = true;
+                        Invalidate(_subcenterScrollTrack);
+                        return;
+                    }
+
+                    if (_subcenterScrollTrack.Contains(e.Location))
+                    {
+                        int page = Math.Max(44, _subcenterScrollViewport.Height - 36);
+                        SetSubcenterScrollOffset(_subcenterScrollOffset + (e.Y < _subcenterScrollThumb.Top ? -page : page));
+                        return;
+                    }
+                }
+
+                base.OnMouseDown(e);
+            }
+
+            protected override void OnMouseMove(MouseEventArgs e)
+            {
+                if (_draggingSubcenterScroll && _subcenterMaxScroll > 0)
+                {
+                    int travel = Math.Max(1, _subcenterScrollTrack.Height - _subcenterScrollThumb.Height);
+                    int delta = e.Y - _subcenterDragStartY;
+                    int offset = _subcenterDragStartOffset + (int)Math.Round(delta * _subcenterMaxScroll / (double)travel);
+                    SetSubcenterScrollOffset(offset);
+                    return;
+                }
+
+                base.OnMouseMove(e);
+            }
+
+            protected override void OnMouseUp(MouseEventArgs e)
+            {
+                if (_draggingSubcenterScroll)
+                {
+                    _draggingSubcenterScroll = false;
+                    Capture = false;
+                    Invalidate(_subcenterScrollTrack);
+                    return;
+                }
+
+                base.OnMouseUp(e);
             }
 
             protected override void OnPaint(PaintEventArgs e)
@@ -9551,115 +9731,169 @@ namespace SeguritechPingMonitor
 
                 using (LinearGradientBrush brush = new LinearGradientBrush(
                     rect,
-                    Color.FromArgb(4, 10, 25),
-                    Color.FromArgb(8, 32, 58),
+                    Color.FromArgb(2, 12, 28),
+                    Color.FromArgb(3, 29, 48),
                     LinearGradientMode.ForwardDiagonal))
                 {
                     g.FillRectangle(brush, rect);
                 }
 
-                using (Pen gridPen = new Pen(Color.FromArgb(34, 55, 116, 154), 1F))
+                using (LinearGradientBrush glow = new LinearGradientBrush(
+                    new Rectangle(rect.Left, rect.Top, rect.Width, Math.Max(1, rect.Height)),
+                    Color.FromArgb(32, 0, 229, 255),
+                    Color.FromArgb(0, 0, 229, 255),
+                    LinearGradientMode.Vertical))
                 {
-                    for (int x = 0; x < rect.Width; x += 42)
+                    g.FillRectangle(glow, rect);
+                }
+
+                using (Pen gridPen = new Pen(Color.FromArgb(18, 61, 142, 173), 1F))
+                {
+                    for (int x = 0; x < rect.Width; x += 64)
                     {
                         g.DrawLine(gridPen, x, 0, x, rect.Height);
                     }
 
-                    for (int y = 0; y < rect.Height; y += 42)
+                    for (int y = 0; y < rect.Height; y += 64)
                     {
                         g.DrawLine(gridPen, 0, y, rect.Width, y);
                     }
                 }
 
-                DrawFloatingDiamond(g, rect.Width - 240, 44, 118, Color.FromArgb(56, 0, 229, 255));
-                DrawFloatingDiamond(g, rect.Width - 410, 20, 88, Color.FromArgb(36, 219, 60, 255));
-                DrawFloatingDiamond(g, rect.Width - 115, 132, 70, Color.FromArgb(42, 120, 220, 255));
-                DrawFloatingDiamond(g, 125, 58, 84, Color.FromArgb(35, 0, 229, 255));
-                DrawFloatingDiamond(g, 260, 22, 128, Color.FromArgb(26, 219, 60, 255));
-
-                Point[] cyanRibbon = new Point[]
-                {
-                    new Point(rect.Width - 360, 0),
-                    new Point(rect.Width, 0),
-                    new Point(rect.Width, 120),
-                    new Point(rect.Width - 230, 52)
-                };
-                using (Brush ribbonBrush = new SolidBrush(Color.FromArgb(44, 0, 229, 255)))
-                {
-                    g.FillPolygon(ribbonBrush, cyanRibbon);
-                }
-
-                Point[] magentaRibbon = new Point[]
-                {
-                    new Point(0, rect.Height - 150),
-                    new Point(260, rect.Height),
-                    new Point(0, rect.Height)
-                };
-                using (Brush ribbonBrush = new SolidBrush(Color.FromArgb(36, 219, 60, 255)))
-                {
-                    g.FillPolygon(ribbonBrush, magentaRibbon);
-                }
-
-                using (Pen cyanPen = new Pen(Color.FromArgb(150, 0, 229, 255), 2F))
-                using (Pen magentaPen = new Pen(Color.FromArgb(135, 219, 60, 255), 2F))
-                {
-                    g.DrawLines(cyanPen, new Point[]
-                    {
-                        new Point(26, rect.Height - 78),
-                        new Point(190, rect.Height - 138),
-                        new Point(370, rect.Height - 102),
-                        new Point(540, rect.Height - 178)
-                    });
-
-                    g.DrawLines(magentaPen, new Point[]
-                    {
-                        new Point(rect.Width - 540, 64),
-                        new Point(rect.Width - 370, 128),
-                        new Point(rect.Width - 190, 92),
-                        new Point(rect.Width - 38, 154)
-                    });
-                }
-
-                DrawCityLine(g, rect);
+                DrawCircuitCluster(g, rect, rect.Right - 520, rect.Top + 18, 1);
+                DrawCircuitCluster(g, rect, rect.Left + 120, rect.Bottom - 230, -1);
+                DrawLongCircuitBus(g, rect);
             }
 
-            private void DrawFloatingDiamond(Graphics g, int centerX, int centerY, int size, Color color)
+            private void DrawCircuitCluster(Graphics g, Rectangle rect, int originX, int originY, int direction)
             {
-                Point[] points = new Point[]
-                {
-                    new Point(centerX, centerY - (size / 2)),
-                    new Point(centerX + (size / 2), centerY),
-                    new Point(centerX, centerY + (size / 2)),
-                    new Point(centerX - (size / 2), centerY)
-                };
+                Color cyan = Color.FromArgb(0, 229, 255);
+                Color blue = Color.FromArgb(23, 147, 255);
+                int dir = direction < 0 ? -1 : 1;
 
-                using (Brush brush = new SolidBrush(color))
+                DrawCircuitTrace(g, new Point[]
                 {
-                    g.FillPolygon(brush, points);
+                    new Point(originX, originY + 28),
+                    new Point(originX + (dir * 72), originY + 28),
+                    new Point(originX + (dir * 104), originY + 62),
+                    new Point(originX + (dir * 172), originY + 62),
+                    new Point(originX + (dir * 218), originY + 110)
+                }, cyan, true, true);
+
+                DrawCircuitTrace(g, new Point[]
+                {
+                    new Point(originX + (dir * 24), originY + 96),
+                    new Point(originX + (dir * 92), originY + 96),
+                    new Point(originX + (dir * 132), originY + 136),
+                    new Point(originX + (dir * 228), originY + 136)
+                }, cyan, false, true);
+
+                DrawCircuitTrace(g, new Point[]
+                {
+                    new Point(originX - (dir * 18), originY + 156),
+                    new Point(originX + (dir * 82), originY + 156),
+                    new Point(originX + (dir * 128), originY + 198),
+                    new Point(originX + (dir * 250), originY + 198)
+                }, blue, true, false);
+
+                DrawCircuitTrace(g, new Point[]
+                {
+                    new Point(originX + (dir * 112), originY + 10),
+                    new Point(originX + (dir * 164), originY + 62),
+                    new Point(originX + (dir * 164), originY + 172),
+                    new Point(originX + (dir * 214), originY + 222)
+                }, cyan, false, true);
+
+                DrawCircuitTrace(g, new Point[]
+                {
+                    new Point(originX + (dir * 276), originY + 26),
+                    new Point(originX + (dir * 276), originY + 176),
+                    new Point(originX + (dir * 318), originY + 218)
+                }, cyan, true, true);
+            }
+
+            private void DrawLongCircuitBus(Graphics g, Rectangle rect)
+            {
+                int y = Math.Max(90, rect.Height / 5);
+                int startX = Math.Max(40, rect.Width / 8);
+                int endX = rect.Right - 36;
+                Color cyan = Color.FromArgb(0, 229, 255);
+
+                DrawCircuitTrace(g, new Point[]
+                {
+                    new Point(startX, y + 72),
+                    new Point(startX + 170, y + 72),
+                    new Point(startX + 210, y + 34),
+                    new Point(startX + 420, y + 34),
+                    new Point(startX + 456, y),
+                    new Point(endX, y)
+                }, cyan, true, false);
+
+                DrawCircuitTrace(g, new Point[]
+                {
+                    new Point(startX + 40, y + 118),
+                    new Point(startX + 270, y + 118),
+                    new Point(startX + 306, y + 82),
+                    new Point(endX - 150, y + 82),
+                    new Point(endX - 112, y + 44),
+                    new Point(endX, y + 44)
+                }, cyan, false, true);
+            }
+
+            private void DrawCircuitTrace(Graphics g, Point[] points, Color color, bool startNode, bool endNode)
+            {
+                if (points == null || points.Length < 2)
+                {
+                    return;
                 }
 
-                using (Pen pen = new Pen(Color.FromArgb(Math.Min(190, color.A + 80), color.R, color.G, color.B), 1.2F))
+                using (Pen glow = new Pen(Color.FromArgb(42, color.R, color.G, color.B), 6F))
+                using (Pen line = new Pen(Color.FromArgb(190, color.R, color.G, color.B), 2F))
                 {
-                    g.DrawPolygon(pen, points);
+                    glow.StartCap = LineCap.Round;
+                    glow.EndCap = LineCap.Round;
+                    glow.LineJoin = LineJoin.Round;
+                    line.StartCap = LineCap.Round;
+                    line.EndCap = LineCap.Round;
+                    line.LineJoin = LineJoin.Round;
+                    g.DrawLines(glow, points);
+                    g.DrawLines(line, points);
+                }
+
+                if (startNode)
+                {
+                    DrawCircuitNode(g, points[0], color, true);
+                }
+                for (int i = 1; i < points.Length - 1; i++)
+                {
+                    DrawCircuitNode(g, points[i], color, false);
+                }
+                if (endNode)
+                {
+                    DrawCircuitNode(g, points[points.Length - 1], color, true);
                 }
             }
 
-            private void DrawCityLine(Graphics g, Rectangle rect)
+            private void DrawCircuitNode(Graphics g, Point center, Color color, bool filled)
             {
-                int baseY = rect.Bottom - 24;
-                int x = 22;
-                int[] heights = new int[] { 72, 128, 92, 160, 116, 82, 148, 104, 172, 96, 132, 74, 118, 154, 88, 136 };
-                using (Pen pen = new Pen(Color.FromArgb(150, 0, 229, 255), 1.8F))
-                using (Pen glow = new Pen(Color.FromArgb(55, 0, 229, 255), 5F))
+                Rectangle node = new Rectangle(center.X - 5, center.Y - 5, 10, 10);
+                using (Brush glow = new SolidBrush(Color.FromArgb(34, color.R, color.G, color.B)))
                 {
-                    for (int i = 0; x < rect.Width - 16; i++)
+                    g.FillEllipse(glow, center.X - 10, center.Y - 10, 20, 20);
+                }
+
+                if (filled)
+                {
+                    using (Brush brush = new SolidBrush(Color.FromArgb(220, color.R, color.G, color.B)))
                     {
-                        int width = 34 + ((i % 4) * 13);
-                        int top = baseY - heights[i % heights.Length];
-                        Rectangle building = new Rectangle(x, top, width, heights[i % heights.Length]);
-                        DrawBuilding(g, glow, building);
-                        DrawBuilding(g, pen, building);
-                        x += width + 12;
+                        g.FillEllipse(brush, node);
+                    }
+                }
+                else
+                {
+                    using (Pen pen = new Pen(Color.FromArgb(210, color.R, color.G, color.B), 2F))
+                    {
+                        g.DrawEllipse(pen, node);
                     }
                 }
             }
@@ -9790,6 +10024,11 @@ namespace SeguritechPingMonitor
                 int startY = inner.Top + 58;
                 if (rows.Count == 0)
                 {
+                    _subcenterScrollOffset = 0;
+                    _subcenterMaxScroll = 0;
+                    _subcenterScrollViewport = Rectangle.Empty;
+                    _subcenterScrollTrack = Rectangle.Empty;
+                    _subcenterScrollThumb = Rectangle.Empty;
                     using (Font emptyFont = new Font("Segoe UI", 9F, FontStyle.Regular))
                     {
                         DrawText(g, T("No hay ubicaciones con muestras para esta ventana.", "No locations have samples in this window."), emptyFont, TextMuted, new Rectangle(inner.Left, startY, inner.Width, 80), ContentAlignment.MiddleCenter);
@@ -9797,35 +10036,112 @@ namespace SeguritechPingMonitor
                     return;
                 }
 
-                int maxRows = Math.Max(1, Math.Min(rows.Count, Math.Max(1, (inner.Bottom - startY - 26) / 46)));
-                int rowHeight = Math.Max(42, Math.Min(56, (inner.Bottom - startY - 22) / maxRows));
+                int rowHeight = 56;
+                Rectangle viewport = new Rectangle(inner.Left, startY, inner.Width, Math.Max(44, inner.Bottom - startY - 4));
+                Rectangle content = viewport;
+                int totalContentHeight = rows.Count * rowHeight;
+                _subcenterMaxScroll = Math.Max(0, totalContentHeight - viewport.Height);
+                ClampSubcenterScrollOffset();
+                _subcenterScrollViewport = viewport;
+                _subcenterScrollTrack = Rectangle.Empty;
+                _subcenterScrollThumb = Rectangle.Empty;
+
+                if (_subcenterMaxScroll > 0)
+                {
+                    content = new Rectangle(viewport.Left, viewport.Top, Math.Max(1, viewport.Width - 18), viewport.Height);
+                    _subcenterScrollTrack = new Rectangle(viewport.Right - 8, viewport.Top + 3, 6, Math.Max(20, viewport.Height - 6));
+                    int thumbHeight = Math.Max(34, (int)Math.Round(_subcenterScrollTrack.Height * (_subcenterScrollTrack.Height / (double)totalContentHeight)));
+                    thumbHeight = Math.Min(_subcenterScrollTrack.Height, thumbHeight);
+                    int travel = Math.Max(1, _subcenterScrollTrack.Height - thumbHeight);
+                    int thumbTop = _subcenterScrollTrack.Top + (int)Math.Round(_subcenterScrollOffset * travel / (double)Math.Max(1, _subcenterMaxScroll));
+                    _subcenterScrollThumb = new Rectangle(_subcenterScrollTrack.Left, thumbTop, _subcenterScrollTrack.Width, thumbHeight);
+                }
+
                 using (Font labelFont = new Font("Segoe UI Semibold", 9.3F, FontStyle.Bold))
                 using (Font metaFont = new Font("Segoe UI", 8F, FontStyle.Regular))
                 using (Font valueFont = new Font("Segoe UI Semibold", 10F, FontStyle.Bold))
                 {
-                    for (int i = 0; i < maxRows; i++)
+                    Region previousClip = g.Clip;
+                    g.SetClip(content);
+                    for (int i = 0; i < rows.Count; i++)
                     {
                         DashboardStats stat = rows[i];
                         double availability = Availability(stat);
                         Color color = SubcenterColor(i);
-                        int y = startY + (i * rowHeight);
+                        int y = content.Top - _subcenterScrollOffset + (i * rowHeight);
+                        if (y > content.Bottom || y + rowHeight < content.Top)
+                        {
+                            continue;
+                        }
 
-                        DrawText(g, stat.Technology, labelFont, TextMain, new Rectangle(inner.Left, y, inner.Width - 82, 22), ContentAlignment.MiddleLeft);
+                        DrawText(g, stat.Technology, labelFont, TextMain, new Rectangle(content.Left, y, content.Width - 82, 22), ContentAlignment.MiddleLeft);
                         string value = availability < 0 ? T("S/D", "N/A") : availability.ToString("0.00", CultureInfo.InvariantCulture) + "%";
-                        DrawText(g, value, valueFont, availability < 0 ? TextMuted : color, new Rectangle(inner.Right - 78, y, 78, 22), ContentAlignment.MiddleRight);
+                        DrawText(g, value, valueFont, availability < 0 ? TextMuted : color, new Rectangle(content.Right - 78, y, 78, 22), ContentAlignment.MiddleRight);
 
-                        Rectangle bar = new Rectangle(inner.Left, y + 27, Math.Max(70, inner.Width - 118), 10);
+                        Rectangle bar = new Rectangle(content.Left, y + 27, Math.Max(70, content.Width - 118), 10);
                         DrawRoundedBar(g, bar, Color.FromArgb(51, 65, 85), availability < 0 ? 0 : availability, color);
 
                         string meta = stat.Devices.ToString(CultureInfo.InvariantCulture) + T(" disp. | ", " dev. | ") + stat.Samples.ToString(CultureInfo.InvariantCulture) + T(" muestras", " samples");
-                        DrawText(g, meta, metaFont, TextMuted, new Rectangle(inner.Right - 112, y + 22, 112, 20), ContentAlignment.MiddleRight);
+                        DrawText(g, meta, metaFont, TextMuted, new Rectangle(content.Right - 112, y + 22, 112, 20), ContentAlignment.MiddleRight);
                     }
 
-                    if (rows.Count > maxRows)
+                    g.Clip = previousClip;
+                    previousClip.Dispose();
+
+                    if (_subcenterMaxScroll > 0)
                     {
-                        DrawText(g, "+" + (rows.Count - maxRows).ToString(CultureInfo.InvariantCulture) + T(" ubicaciones mas", " more locations"), metaFont, TextMuted, new Rectangle(inner.Left, inner.Bottom - 20, inner.Width, 20), ContentAlignment.MiddleCenter);
+                        DrawSubcenterScrollbar(g);
                     }
                 }
+            }
+
+            private void DrawSubcenterScrollbar(Graphics g)
+            {
+                if (_subcenterScrollTrack.IsEmpty || _subcenterScrollThumb.IsEmpty)
+                {
+                    return;
+                }
+
+                using (GraphicsPath trackPath = TechStyle.RoundRect(TechStyle.Align(_subcenterScrollTrack), 3F))
+                using (Brush trackBrush = new SolidBrush(Color.FromArgb(72, 7, 20, 44)))
+                {
+                    g.FillPath(trackBrush, trackPath);
+                }
+
+                Color thumbTop = _draggingSubcenterScroll ? Color.FromArgb(0, 229, 255) : Color.FromArgb(114, 210, 235);
+                Color thumbBottom = _draggingSubcenterScroll ? Color.FromArgb(79, 242, 185) : Color.FromArgb(38, 124, 171);
+                using (GraphicsPath thumbPath = TechStyle.RoundRect(TechStyle.Align(_subcenterScrollThumb), 3F))
+                using (LinearGradientBrush thumbBrush = new LinearGradientBrush(_subcenterScrollThumb, thumbTop, thumbBottom, LinearGradientMode.Vertical))
+                using (Pen border = new Pen(Color.FromArgb(96, 0, 229, 255), 1F))
+                {
+                    g.FillPath(thumbBrush, thumbPath);
+                    g.DrawPath(border, thumbPath);
+                }
+            }
+
+            private void SetSubcenterScrollOffset(int offset)
+            {
+                int next = Math.Max(0, Math.Min(_subcenterMaxScroll, offset));
+                if (next == _subcenterScrollOffset)
+                {
+                    return;
+                }
+
+                _subcenterScrollOffset = next;
+                if (!_subcenterScrollViewport.IsEmpty)
+                {
+                    Invalidate(_subcenterScrollViewport);
+                }
+
+                if (!_subcenterScrollTrack.IsEmpty)
+                {
+                    Invalidate(_subcenterScrollTrack);
+                }
+            }
+
+            private void ClampSubcenterScrollOffset()
+            {
+                _subcenterScrollOffset = Math.Max(0, Math.Min(_subcenterMaxScroll, _subcenterScrollOffset));
             }
 
             private void DrawDetailsCard(Graphics g, Rectangle rect)
