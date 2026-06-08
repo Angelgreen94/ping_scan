@@ -891,6 +891,20 @@ namespace SeguritechPingMonitor
             { "Descargar reporte", "Download report" },
             { "Limpiar historial", "Clear history" },
             { "Agrupar", "Group by" },
+            { "Periodo", "Period" },
+            { "Ultima hora", "Last hour" },
+            { "Ultimas 24 horas", "Last 24 hours" },
+            { "Ultima semana", "Last week" },
+            { "Ultimo mes", "Last month" },
+            { "Ultimo dia", "Last day" },
+            { "Periodo personalizado", "Custom period" },
+            { "Seleccione fecha y hora inicial y final", "Select start and end date/time" },
+            { "Inicio", "Start" },
+            { "Fin", "End" },
+            { "Hora", "Hour" },
+            { "Minuto", "Minute" },
+            { "Aplicar", "Apply" },
+            { "Periodo personalizado aplicado.", "Custom period applied." },
             { "Tecnologia", "Technology" },
             { "Afiliacion", "Affiliation" },
             { "IP / Dispositivo", "IP / Device" },
@@ -3045,6 +3059,7 @@ namespace SeguritechPingMonitor
         private ComboBox _monitorSubcenterFilter;
         private ComboBox _monitorStatusFilter;
         private ComboBox _dashboardGroupFilter;
+        private ComboBox _dashboardWindowFilter;
         private ComboBox _dashboardTechnologyFilter;
         private ComboBox _dashboardSubcenterFilter;
         private ComboBox _dashboardAffiliationFilter;
@@ -3080,6 +3095,9 @@ namespace SeguritechPingMonitor
         private string _signedInRole;
         private UserStore.UserProfile _signedInProfile;
         private int _dashboardWindowDays;
+        private string _dashboardWindowKey;
+        private DateTime _dashboardCustomStart;
+        private DateTime _dashboardCustomEnd;
 
         public bool LogoutRequested { get; private set; }
 
@@ -3117,6 +3135,9 @@ namespace SeguritechPingMonitor
             _historyResetPath = Path.Combine(Application.StartupPath, "history_reset.txt");
             _userStore = new UserStore(Path.Combine(Application.StartupPath, "users.xml"));
             _dashboardWindowDays = UserStore.DefaultDashboardDays;
+            _dashboardWindowKey = "24h";
+            _dashboardCustomEnd = DateTime.Now;
+            _dashboardCustomStart = _dashboardCustomEnd.AddHours(-1);
 
             SetSignedInUser(_signedInUser, _signedInRole);
             SetWindowIcon();
@@ -3388,8 +3409,7 @@ namespace SeguritechPingMonitor
             _typeFilter = new ComboBox();
             _typeFilter.DropDownStyle = ComboBoxStyle.DropDownList;
             _typeFilter.Width = 150;
-            _typeFilter.BackColor = SurfaceSoft;
-            _typeFilter.ForeColor = TextMain;
+            StyleComboBox(_typeFilter);
             _typeFilter.Location = new Point(730, 14);
             _typeFilter.Items.Add("Todos");
             for (int i = 0; i < DeviceTypes.Length; i++)
@@ -3412,8 +3432,7 @@ namespace SeguritechPingMonitor
             _monitorSubcenterFilter.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             _monitorSubcenterFilter.AutoCompleteSource = AutoCompleteSource.ListItems;
             _monitorSubcenterFilter.Width = 130;
-            _monitorSubcenterFilter.BackColor = SurfaceSoft;
-            _monitorSubcenterFilter.ForeColor = TextMain;
+            StyleComboBox(_monitorSubcenterFilter);
             _monitorSubcenterFilter.Location = new Point(970, 14);
             filters.Controls.Add(_monitorSubcenterFilter);
 
@@ -3427,8 +3446,7 @@ namespace SeguritechPingMonitor
             _monitorStatusFilter = new ComboBox();
             _monitorStatusFilter.DropDownStyle = ComboBoxStyle.DropDownList;
             _monitorStatusFilter.Width = 135;
-            _monitorStatusFilter.BackColor = SurfaceSoft;
-            _monitorStatusFilter.ForeColor = TextMain;
+            StyleComboBox(_monitorStatusFilter);
             _monitorStatusFilter.Location = new Point(1172, 14);
             _monitorStatusFilter.Items.Add("Todos");
             _monitorStatusFilter.Items.Add("En linea");
@@ -3628,6 +3646,8 @@ namespace SeguritechPingMonitor
                     ? "Availability from the last " + _dashboardWindowDays.ToString(CultureInfo.InvariantCulture) + " days"
                     : "Disponibilidad de los ultimos " + _dashboardWindowDays.ToString(CultureInfo.InvariantCulture) + " dias";
             }
+
+            RefreshDashboardWindowItems();
         }
 
         private bool IsEnglishUi()
@@ -3747,6 +3767,7 @@ namespace SeguritechPingMonitor
         private void ApplyComboLocalization()
         {
             RefreshDashboardGroupItems();
+            RefreshDashboardWindowItems();
             RefreshMonitorStatusFilter();
             RefreshMonitorFilters();
             RefreshDashboardFilters();
@@ -3902,6 +3923,267 @@ namespace SeguritechPingMonitor
             return "technology";
         }
 
+        private void RefreshDashboardWindowItems()
+        {
+            if (_dashboardWindowFilter == null)
+            {
+                return;
+            }
+
+            string key = String.IsNullOrWhiteSpace(_dashboardWindowKey)
+                ? CanonicalDashboardWindow(GetComboText(_dashboardWindowFilter, DisplayDashboardWindow("24h")))
+                : _dashboardWindowKey;
+            _suppressDashboardFilterEvents = true;
+            try
+            {
+                _dashboardWindowFilter.BeginUpdate();
+                _dashboardWindowFilter.Items.Clear();
+                _dashboardWindowFilter.Items.Add(DisplayDashboardWindow("1h"));
+                _dashboardWindowFilter.Items.Add(DisplayDashboardWindow("24h"));
+                _dashboardWindowFilter.Items.Add(DisplayDashboardWindow("7d"));
+                _dashboardWindowFilter.Items.Add(DisplayDashboardWindow("30d"));
+                _dashboardWindowFilter.Items.Add(DisplayDashboardWindow("custom"));
+                _dashboardWindowFilter.SelectedItem = DisplayDashboardWindow(key);
+                if (_dashboardWindowFilter.SelectedIndex < 0)
+                {
+                    _dashboardWindowFilter.SelectedItem = DisplayDashboardWindow("24h");
+                }
+                _dashboardWindowFilter.EndUpdate();
+            }
+            finally
+            {
+                _suppressDashboardFilterEvents = false;
+            }
+        }
+
+        private string DisplayDashboardWindow(string key)
+        {
+            string normalized = String.IsNullOrWhiteSpace(key) ? "24h" : key.ToLowerInvariant();
+            if (normalized == "custom")
+            {
+                return _dashboardWindowKey == "custom"
+                    ? FormatDashboardCustomWindow()
+                    : T("Periodo personalizado", "Custom period");
+            }
+
+            int amount;
+            if (TryParseWindowKeyNumber(normalized, 'h', out amount))
+            {
+                if (amount <= 1)
+                {
+                    return T("Ultima hora", "Last hour");
+                }
+
+                return IsEnglishUi()
+                    ? "Last " + amount.ToString(CultureInfo.InvariantCulture) + " hours"
+                    : "Ultimas " + amount.ToString(CultureInfo.InvariantCulture) + " horas";
+            }
+
+            if (TryParseWindowKeyNumber(normalized, 'd', out amount))
+            {
+                if (amount == 7)
+                {
+                    return T("Ultima semana", "Last week");
+                }
+
+                if (amount == 30)
+                {
+                    return T("Ultimo mes", "Last month");
+                }
+
+                if (amount > 7 && amount % 7 == 0)
+                {
+                    int weeks = amount / 7;
+                    return IsEnglishUi()
+                        ? "Last " + weeks.ToString(CultureInfo.InvariantCulture) + " weeks"
+                        : "Ultimas " + weeks.ToString(CultureInfo.InvariantCulture) + " semanas";
+                }
+
+                if (amount <= 1)
+                {
+                    return T("Ultimo dia", "Last day");
+                }
+
+                return IsEnglishUi()
+                    ? "Last " + amount.ToString(CultureInfo.InvariantCulture) + " days"
+                    : "Ultimos " + amount.ToString(CultureInfo.InvariantCulture) + " dias";
+            }
+
+            return T("Ultimas 24 horas", "Last 24 hours");
+        }
+
+        private string CanonicalDashboardWindow(string value)
+        {
+            string text = value == null ? "" : value.Trim().ToLowerInvariant();
+            if (LooksLikeDashboardCustomWindow(text))
+            {
+                return "custom";
+            }
+
+            if (text.Contains("personal") || text.Contains("custom"))
+            {
+                return "custom";
+            }
+
+            if (text.Contains("hora") || text.Contains("hour"))
+            {
+                int hours = ExtractFirstPositiveInteger(text);
+                if (hours <= 0)
+                {
+                    hours = 1;
+                }
+
+                return hours.ToString(CultureInfo.InvariantCulture) + "h";
+            }
+
+            if (text.Contains("semana") || text.Contains("week"))
+            {
+                int weeks = ExtractFirstPositiveInteger(text);
+                if (weeks <= 0)
+                {
+                    weeks = 1;
+                }
+
+                return (weeks * 7).ToString(CultureInfo.InvariantCulture) + "d";
+            }
+
+            if (text.Contains("mes") || text.Contains("month"))
+            {
+                return "30d";
+            }
+
+            if (text.Contains("dia") || text.Contains("day"))
+            {
+                int days = ExtractFirstPositiveInteger(text);
+                if (days <= 0)
+                {
+                    days = 1;
+                }
+
+                return days.ToString(CultureInfo.InvariantCulture) + "d";
+            }
+
+            return "24h";
+        }
+
+        private TimeSpan GetDashboardWindowSpan()
+        {
+            string key = GetDashboardWindowKey();
+            if (key == "custom")
+            {
+                if (_dashboardCustomEnd > _dashboardCustomStart)
+                {
+                    return _dashboardCustomEnd - _dashboardCustomStart;
+                }
+
+                return TimeSpan.FromHours(1);
+            }
+
+            int amount;
+            if (TryParseWindowKeyNumber(key, 'h', out amount))
+            {
+                return TimeSpan.FromHours(Math.Max(1, amount));
+            }
+
+            if (TryParseWindowKeyNumber(key, 'd', out amount))
+            {
+                return TimeSpan.FromDays(Math.Max(1, amount));
+            }
+
+            return TimeSpan.FromHours(24);
+        }
+
+        private string GetDashboardWindowKey()
+        {
+            return String.IsNullOrWhiteSpace(_dashboardWindowKey)
+                ? CanonicalDashboardWindow(GetComboText(_dashboardWindowFilter, DisplayDashboardWindow("24h")))
+                : _dashboardWindowKey;
+        }
+
+        private void GetDashboardWindowRange(out DateTime cutoff, out DateTime now)
+        {
+            string key = GetDashboardWindowKey();
+            if (key == "custom")
+            {
+                cutoff = _dashboardCustomStart;
+                now = _dashboardCustomEnd;
+                if (now <= cutoff)
+                {
+                    now = DateTime.Now;
+                    cutoff = now.AddHours(-1);
+                }
+                return;
+            }
+
+            now = DateTime.Now;
+            cutoff = now.Subtract(GetDashboardWindowSpan());
+        }
+
+        private string FormatDashboardCustomWindow()
+        {
+            DateTime start = _dashboardCustomStart;
+            DateTime end = _dashboardCustomEnd;
+            if (end <= start)
+            {
+                end = DateTime.Now;
+                start = end.AddHours(-1);
+            }
+
+            return start.ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture)
+                + " - "
+                + end.ToString("HH:mm dd/MM/yyyy", CultureInfo.InvariantCulture);
+        }
+
+        private bool LooksLikeDashboardCustomWindow(string text)
+        {
+            return !String.IsNullOrWhiteSpace(text)
+                && text.Contains(":")
+                && text.Contains("/")
+                && text.Contains("-");
+        }
+
+        private bool TryParseWindowKeyNumber(string key, char suffix, out int value)
+        {
+            value = 0;
+            string text = key == null ? "" : key.Trim().ToLowerInvariant();
+            string suffixText = suffix.ToString();
+            if (!text.EndsWith(suffixText, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return Int32.TryParse(text.Substring(0, text.Length - suffixText.Length), NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+        }
+
+        private int ExtractFirstPositiveInteger(string text)
+        {
+            if (String.IsNullOrEmpty(text))
+            {
+                return 0;
+            }
+
+            StringBuilder digits = new StringBuilder();
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (Char.IsDigit(text[i]))
+                {
+                    digits.Append(text[i]);
+                }
+                else if (digits.Length > 0)
+                {
+                    break;
+                }
+            }
+
+            int value;
+            if (digits.Length > 0 && Int32.TryParse(digits.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+            {
+                return value;
+            }
+
+            return 0;
+        }
+
         private void ApplyRolePermissions()
         {
             bool admin = UserStore.IsAdministrator(_signedInRole);
@@ -4006,8 +4288,7 @@ namespace SeguritechPingMonitor
 
             _dashboardGroupFilter = new ComboBox();
             _dashboardGroupFilter.DropDownStyle = ComboBoxStyle.DropDownList;
-            _dashboardGroupFilter.BackColor = SurfaceSoft;
-            _dashboardGroupFilter.ForeColor = TextMain;
+            StyleComboBox(_dashboardGroupFilter);
             _dashboardGroupFilter.Width = 125;
             _dashboardGroupFilter.Location = new Point(74, 78);
             _dashboardGroupFilter.Items.Add("Tecnologia");
@@ -4018,6 +4299,22 @@ namespace SeguritechPingMonitor
             _dashboardGroupFilter.SelectedIndex = 0;
             header.Controls.Add(_dashboardGroupFilter);
 
+            Label windowLabel = new Label();
+            windowLabel.Text = "Periodo";
+            windowLabel.AutoSize = true;
+            windowLabel.ForeColor = TextMuted;
+            windowLabel.Location = new Point(704, 82);
+            header.Controls.Add(windowLabel);
+
+            _dashboardWindowFilter = new ComboBox();
+            _dashboardWindowFilter.DropDownStyle = ComboBoxStyle.DropDownList;
+            StyleComboBox(_dashboardWindowFilter);
+            _dashboardWindowFilter.Width = 210;
+            _dashboardWindowFilter.DropDownWidth = 330;
+            _dashboardWindowFilter.Location = new Point(762, 78);
+            header.Controls.Add(_dashboardWindowFilter);
+            RefreshDashboardWindowItems();
+
             Label technologyLabel = new Label();
             technologyLabel.Text = "Tecnologia";
             technologyLabel.AutoSize = true;
@@ -4027,8 +4324,7 @@ namespace SeguritechPingMonitor
 
             _dashboardTechnologyFilter = new ComboBox();
             _dashboardTechnologyFilter.DropDownStyle = ComboBoxStyle.DropDownList;
-            _dashboardTechnologyFilter.BackColor = SurfaceSoft;
-            _dashboardTechnologyFilter.ForeColor = TextMain;
+            StyleComboBox(_dashboardTechnologyFilter);
             _dashboardTechnologyFilter.Width = 150;
             _dashboardTechnologyFilter.Location = new Point(294, 78);
             header.Controls.Add(_dashboardTechnologyFilter);
@@ -4044,8 +4340,7 @@ namespace SeguritechPingMonitor
             _dashboardSubcenterFilter.DropDownStyle = ComboBoxStyle.DropDown;
             _dashboardSubcenterFilter.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             _dashboardSubcenterFilter.AutoCompleteSource = AutoCompleteSource.ListItems;
-            _dashboardSubcenterFilter.BackColor = SurfaceSoft;
-            _dashboardSubcenterFilter.ForeColor = TextMain;
+            StyleComboBox(_dashboardSubcenterFilter);
             _dashboardSubcenterFilter.Width = 135;
             _dashboardSubcenterFilter.Location = new Point(540, 78);
             header.Controls.Add(_dashboardSubcenterFilter);
@@ -4061,8 +4356,7 @@ namespace SeguritechPingMonitor
             _dashboardAffiliationFilter.DropDownStyle = ComboBoxStyle.DropDown;
             _dashboardAffiliationFilter.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             _dashboardAffiliationFilter.AutoCompleteSource = AutoCompleteSource.ListItems;
-            _dashboardAffiliationFilter.BackColor = SurfaceSoft;
-            _dashboardAffiliationFilter.ForeColor = TextMain;
+            StyleComboBox(_dashboardAffiliationFilter);
             _dashboardAffiliationFilter.Width = 135;
             _dashboardAffiliationFilter.Location = new Point(762, 78);
             header.Controls.Add(_dashboardAffiliationFilter);
@@ -4123,6 +4417,8 @@ namespace SeguritechPingMonitor
                     _dashboardSummaryLabel,
                     groupLabel,
                     _dashboardGroupFilter,
+                    windowLabel,
+                    _dashboardWindowFilter,
                     technologyLabel,
                     _dashboardTechnologyFilter,
                     subcenterLabel,
@@ -4142,6 +4438,8 @@ namespace SeguritechPingMonitor
                 _dashboardSummaryLabel,
                 groupLabel,
                 _dashboardGroupFilter,
+                windowLabel,
+                _dashboardWindowFilter,
                 technologyLabel,
                 _dashboardTechnologyFilter,
                 subcenterLabel,
@@ -4478,6 +4776,8 @@ namespace SeguritechPingMonitor
             Label summary,
             Label groupLabel,
             ComboBox groupFilter,
+            Label windowLabel,
+            ComboBox windowFilter,
             Label technologyLabel,
             ComboBox technologyFilter,
             Label subcenterLabel,
@@ -4547,6 +4847,8 @@ namespace SeguritechPingMonitor
                 technologyFilter.SetBounds(296, y1, 150, 24);
                 subcenterLabel.SetBounds(464, y1 + 4, 112, 22);
                 subcenterFilter.SetBounds(580, y1, 132, 24);
+                windowLabel.SetBounds(728, y1 + 4, 58, 22);
+                windowFilter.SetBounds(790, y1, Math.Max(112, Math.Min(210, width - 808)), 24);
                 affiliationLabel.SetBounds(18, y2 + 4, 68, 22);
                 affiliationFilter.SetBounds(92, y2, 132, 24);
                 searchLabel.SetBounds(244, y2 + 4, 118, 22);
@@ -4555,7 +4857,7 @@ namespace SeguritechPingMonitor
             }
             else
             {
-                int y1 = 76;
+                int y1 = 72;
                 int y2 = 102;
                 groupLabel.SetBounds(18, y1 + 4, 55, 22);
                 groupFilter.SetBounds(76, y1, 126, 24);
@@ -4566,10 +4868,20 @@ namespace SeguritechPingMonitor
                 affiliationLabel.SetBounds(18, y2 + 4, 68, 22);
                 affiliationFilter.SetBounds(92, y2, 126, 24);
                 searchLabel.SetBounds(238, y2 + 4, 118, 22);
-                searchText.SetBounds(360, y2, Math.Min(260, Math.Max(180, width - 1010)), 24);
+                searchText.SetBounds(360, y2, Math.Min(width < 1500 ? 180 : 230, Math.Max(150, width - 1240)), 24);
+                int periodX = searchText.Right + 22;
+                windowLabel.SetBounds(periodX, y2 + 4, 58, 22);
+                windowFilter.SetBounds(periodX + 64, y2, width < 1500 ? 182 : 210, 24);
 
-                int kpiLeft = Math.Max(704, width - 580);
-                kpis.SetBounds(kpiLeft, 78, Math.Max(260, width - kpiLeft - 18), 44);
+                if (width < 1500)
+                {
+                    kpis.SetBounds(18, 0, 0, 0);
+                }
+                else
+                {
+                    int kpiLeft = Math.Max(920, width - 580);
+                    kpis.SetBounds(kpiLeft, 76, Math.Max(260, width - kpiLeft - 18), 44);
+                }
             }
         }
 
@@ -4622,6 +4934,60 @@ namespace SeguritechPingMonitor
             button.BackColor = SurfaceSoft;
             button.ForeColor = TextMain;
             return button;
+        }
+
+        private static void StyleComboBox(ComboBox combo)
+        {
+            if (combo == null)
+            {
+                return;
+            }
+
+            combo.BackColor = SurfaceSoft;
+            combo.ForeColor = TextMain;
+            combo.FlatStyle = FlatStyle.Flat;
+            combo.DrawMode = DrawMode.OwnerDrawFixed;
+            combo.ItemHeight = 20;
+            combo.DrawItem += ComboDrawItem;
+        }
+
+        private static void ComboDrawItem(object sender, DrawItemEventArgs e)
+        {
+            ComboBox combo = sender as ComboBox;
+            if (combo == null)
+            {
+                return;
+            }
+
+            bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+            bool editArea = (e.State & DrawItemState.ComboBoxEdit) == DrawItemState.ComboBoxEdit;
+            Color back = selected && !editArea ? Color.FromArgb(17, 86, 118) : SurfaceSoft;
+            Color fore = selected && !editArea ? Color.White : TextMain;
+
+            using (Brush brush = new SolidBrush(back))
+            {
+                e.Graphics.FillRectangle(brush, e.Bounds);
+            }
+
+            string text = e.Index >= 0 ? combo.GetItemText(combo.Items[e.Index]) : combo.Text;
+            Rectangle textBounds = new Rectangle(e.Bounds.Left + 6, e.Bounds.Top, Math.Max(1, e.Bounds.Width - 10), e.Bounds.Height);
+            TextRenderer.DrawText(
+                e.Graphics,
+                text,
+                combo.Font,
+                textBounds,
+                fore,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+
+            if ((e.State & DrawItemState.Focus) == DrawItemState.Focus)
+            {
+                using (Pen pen = new Pen(AccentSoft, 1F))
+                {
+                    Rectangle focus = e.Bounds;
+                    focus.Inflate(-1, -1);
+                    e.Graphics.DrawRectangle(pen, focus);
+                }
+            }
         }
 
         private void AddTextColumn(string property, string header, int width, bool readOnly)
@@ -4698,6 +5064,7 @@ namespace SeguritechPingMonitor
             _downloadDashboardReportButton.Click += delegate { ExportDashboardReport(); };
             _clearHistoryButton.Click += delegate { ClearHistory(); };
             _dashboardGroupFilter.SelectedIndexChanged += delegate { if (!_suppressDashboardFilterEvents) UpdateDashboard(); };
+            _dashboardWindowFilter.SelectedIndexChanged += delegate { if (!_suppressDashboardFilterEvents) DashboardWindowFilterChanged(); };
             _dashboardTechnologyFilter.SelectedIndexChanged += delegate { if (!_suppressDashboardFilterEvents) UpdateDashboard(); };
             _dashboardSubcenterFilter.SelectedIndexChanged += delegate { if (!_suppressDashboardFilterEvents) UpdateDashboard(); };
             _dashboardSubcenterFilter.TextChanged += delegate { if (!_suppressDashboardFilterEvents) UpdateDashboard(); };
@@ -6869,6 +7236,43 @@ namespace SeguritechPingMonitor
             SetStatus("Historial de disponibilidad limpiado.");
         }
 
+        private void DashboardWindowFilterChanged()
+        {
+            string selectedKey = CanonicalDashboardWindow(GetComboText(_dashboardWindowFilter, DisplayDashboardWindow("24h")));
+            if (selectedKey == "custom")
+            {
+                DateTime end = _dashboardCustomEnd > DateTime.MinValue ? _dashboardCustomEnd : DateTime.Now;
+                DateTime start = _dashboardCustomStart > DateTime.MinValue ? _dashboardCustomStart : end.AddHours(-1);
+                if (end <= start)
+                {
+                    end = DateTime.Now;
+                    start = end.AddHours(-1);
+                }
+
+                using (DashboardRangeDialog dialog = new DashboardRangeDialog(start, end, IsEnglishUi()))
+                {
+                    if (dialog.ShowDialog(this) == DialogResult.OK)
+                    {
+                        _dashboardCustomStart = dialog.StartValue;
+                        _dashboardCustomEnd = dialog.EndValue;
+                        _dashboardWindowKey = "custom";
+                        RefreshDashboardWindowItems();
+                        UpdateDashboard();
+                        SetStatus(T("Periodo personalizado aplicado.", "Custom period applied."));
+                    }
+                    else
+                    {
+                        RefreshDashboardWindowItems();
+                    }
+                }
+
+                return;
+            }
+
+            _dashboardWindowKey = selectedKey;
+            UpdateDashboard();
+        }
+
         private void UpdateDashboard()
         {
             if (_dashboardView == null || _dashboardSummaryLabel == null)
@@ -6876,8 +7280,9 @@ namespace SeguritechPingMonitor
                 return;
             }
 
-            DateTime now = DateTime.Now;
-            DateTime cutoff = now.AddDays(-_dashboardWindowDays);
+            DateTime cutoff;
+            DateTime now;
+            GetDashboardWindowRange(out cutoff, out now);
             string selectedTechnology = GetComboText(_dashboardTechnologyFilter, T("Todas", "All"));
             string selectedSubcenter = GetComboText(_dashboardSubcenterFilter, T("Todas", "All"));
             string selectedAffiliation = GetComboText(_dashboardAffiliationFilter, T("Todas", "All"));
@@ -6975,6 +7380,10 @@ namespace SeguritechPingMonitor
             {
                 PingHistoryEntry entry = _history[i];
                 if (entry.CheckedAt < cutoff)
+                {
+                    continue;
+                }
+                if (entry.CheckedAt > now)
                 {
                     continue;
                 }
@@ -7506,7 +7915,7 @@ namespace SeguritechPingMonitor
             }
             using (Font bandFont = new Font("Segoe UI Semibold", 23F, FontStyle.Bold))
             {
-                DrawReportText(g, "DASHBOARD DE MONITOREO - ULTIMOS " + _dashboardWindowDays.ToString(CultureInfo.InvariantCulture) + " DIAS", bandFont, Color.FromArgb(8, 18, 32), band, StringAlignment.Center);
+                DrawReportText(g, "DASHBOARD DE MONITOREO - " + DashboardWindowReportText(), bandFont, Color.FromArgb(8, 18, 32), band, StringAlignment.Center);
             }
 
             double availability = GetDashboardAvailability(_currentDashboardTotal);
@@ -8066,7 +8475,48 @@ namespace SeguritechPingMonitor
 
         private double DashboardWindowHours()
         {
-            return Math.Max(1, _dashboardWindowDays) * 24.0;
+            return Math.Max(1.0, GetDashboardWindowSpan().TotalHours);
+        }
+
+        private string DashboardWindowReportText()
+        {
+            string key = GetDashboardWindowKey();
+            if (key == "custom")
+            {
+                return "PERIODO PERSONALIZADO";
+            }
+
+            int amount;
+            if (TryParseWindowKeyNumber(key, 'h', out amount))
+            {
+                return amount <= 1
+                    ? "ULTIMA HORA"
+                    : "ULTIMAS " + amount.ToString(CultureInfo.InvariantCulture) + " HORAS";
+            }
+
+            if (TryParseWindowKeyNumber(key, 'd', out amount))
+            {
+                if (amount == 7)
+                {
+                    return "ULTIMA SEMANA";
+                }
+
+                if (amount == 30)
+                {
+                    return "ULTIMO MES";
+                }
+
+                if (amount > 7 && amount % 7 == 0)
+                {
+                    return "ULTIMAS " + (amount / 7).ToString(CultureInfo.InvariantCulture) + " SEMANAS";
+                }
+
+                return amount <= 1
+                    ? "ULTIMO DIA"
+                    : "ULTIMOS " + amount.ToString(CultureInfo.InvariantCulture) + " DIAS";
+            }
+
+            return "ULTIMOS " + _dashboardWindowDays.ToString(CultureInfo.InvariantCulture) + " DIAS";
         }
 
         private void AddDashboardRow(string technology, DashboardStats stat, bool totalRow)
@@ -8350,6 +8800,238 @@ namespace SeguritechPingMonitor
             public bool HasSample;
             public DateTime FirstSample;
             public DateTime LastSample;
+        }
+
+        private sealed class DashboardRangeDialog : Form
+        {
+            private readonly bool _englishUi;
+            private DateTimePicker _startDatePicker;
+            private ComboBox _startHourCombo;
+            private ComboBox _startMinuteCombo;
+            private DateTimePicker _endDatePicker;
+            private ComboBox _endHourCombo;
+            private ComboBox _endMinuteCombo;
+            private Label _statusLabel;
+
+            public DateTime StartValue { get; private set; }
+            public DateTime EndValue { get; private set; }
+
+            public DashboardRangeDialog(DateTime start, DateTime end, bool englishUi)
+            {
+                _englishUi = englishUi;
+                StartValue = start;
+                EndValue = end;
+
+                Text = UiText.Pick(_englishUi, "Periodo personalizado", "Custom period");
+                FormBorderStyle = FormBorderStyle.FixedDialog;
+                StartPosition = FormStartPosition.CenterParent;
+                ControlBox = false;
+                MaximizeBox = false;
+                MinimizeBox = false;
+                ShowInTaskbar = false;
+                BackColor = AppBackground;
+                ForeColor = TextMain;
+                Font = new Font("Segoe UI", 9F);
+                ClientSize = new Size(640, 340);
+
+                BuildInterface();
+            }
+
+            private void BuildInterface()
+            {
+                Panel header = new Panel();
+                header.BackColor = Surface;
+                TechStyle.AttachSurface(header, Color.FromArgb(13, 31, 58), Color.FromArgb(8, 18, 38), AccentSoft, true);
+                header.SetBounds(0, 0, ClientSize.Width, 86);
+                header.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+                Controls.Add(header);
+
+                Label title = new Label();
+                title.Text = UiText.Pick(_englishUi, "Periodo personalizado", "Custom period");
+                title.AutoSize = false;
+                title.Font = new Font("Segoe UI Semibold", 16F, FontStyle.Bold);
+                title.ForeColor = TextMain;
+                title.SetBounds(28, 16, 360, 32);
+                header.Controls.Add(title);
+
+                Label subtitle = new Label();
+                subtitle.Text = UiText.Pick(_englishUi, "Seleccione fecha y hora inicial y final", "Select start and end date/time");
+                subtitle.AutoSize = false;
+                subtitle.ForeColor = TextMuted;
+                subtitle.SetBounds(30, 50, 430, 22);
+                header.Controls.Add(subtitle);
+                TechStyle.MakeChromeTransparent(header);
+
+                AddRangeRow(UiText.Pick(_englishUi, "Inicio", "Start"), 34, 132, StartValue, out _startDatePicker, out _startHourCombo, out _startMinuteCombo);
+                AddRangeRow(UiText.Pick(_englishUi, "Fin", "End"), 34, 194, EndValue, out _endDatePicker, out _endHourCombo, out _endMinuteCombo);
+
+                _statusLabel = new Label();
+                _statusLabel.AutoSize = false;
+                _statusLabel.ForeColor = Color.FromArgb(248, 113, 113);
+                _statusLabel.SetBounds(34, 246, 560, 28);
+                Controls.Add(_statusLabel);
+
+                Button applyButton = MakeDialogButton(UiText.Pick(_englishUi, "Aplicar", "Apply"), true);
+                applyButton.SetBounds(ClientSize.Width - 230, ClientSize.Height - 48, 96, 32);
+                applyButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+                applyButton.Click += delegate { ApplyRange(); };
+                Controls.Add(applyButton);
+
+                Button cancelButton = MakeDialogButton(UiText.Pick(_englishUi, "Cancelar", "Cancel"), false);
+                cancelButton.DialogResult = DialogResult.Cancel;
+                cancelButton.SetBounds(ClientSize.Width - 124, ClientSize.Height - 48, 92, 32);
+                cancelButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+                Controls.Add(cancelButton);
+
+                AcceptButton = applyButton;
+                CancelButton = cancelButton;
+            }
+
+            private void AddRangeRow(string labelText, int x, int y, DateTime value, out DateTimePicker datePicker, out ComboBox hourCombo, out ComboBox minuteCombo)
+            {
+                Label label = new Label();
+                label.Text = labelText;
+                label.AutoSize = false;
+                label.ForeColor = TextMuted;
+                label.BackColor = Color.Transparent;
+                label.SetBounds(x, y - 24, 90, 18);
+                Controls.Add(label);
+
+                DateTime safeValue = ClampDialogDate(value);
+                datePicker = new DateTimePicker();
+                datePicker.Format = DateTimePickerFormat.Custom;
+                datePicker.CustomFormat = "yyyy-MM-dd";
+                datePicker.MinDate = new DateTime(2000, 1, 1);
+                datePicker.MaxDate = DateTime.Now.AddMinutes(1);
+                datePicker.Value = safeValue.Date;
+                datePicker.CalendarMonthBackground = SurfaceSoft;
+                datePicker.CalendarForeColor = TextMain;
+                datePicker.CalendarTitleBackColor = SurfaceAlt;
+                datePicker.CalendarTitleForeColor = TextMain;
+                datePicker.CalendarTrailingForeColor = TextMuted;
+                datePicker.SetBounds(x + 94, y, 170, 26);
+                Controls.Add(datePicker);
+
+                Label hourLabel = new Label();
+                hourLabel.Text = UiText.Pick(_englishUi, "Hora", "Hour");
+                hourLabel.AutoSize = false;
+                hourLabel.ForeColor = TextMuted;
+                hourLabel.BackColor = Color.Transparent;
+                hourLabel.SetBounds(x + 284, y - 24, 70, 18);
+                Controls.Add(hourLabel);
+
+                hourCombo = new ComboBox();
+                hourCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+                StyleComboBox(hourCombo);
+                hourCombo.SetBounds(x + 284, y, 74, 26);
+                FillHourCombo(hourCombo, safeValue.Hour);
+                Controls.Add(hourCombo);
+
+                Label minuteLabel = new Label();
+                minuteLabel.Text = UiText.Pick(_englishUi, "Minuto", "Minute");
+                minuteLabel.AutoSize = false;
+                minuteLabel.ForeColor = TextMuted;
+                minuteLabel.BackColor = Color.Transparent;
+                minuteLabel.SetBounds(x + 378, y - 24, 74, 18);
+                Controls.Add(minuteLabel);
+
+                minuteCombo = new ComboBox();
+                minuteCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+                StyleComboBox(minuteCombo);
+                minuteCombo.SetBounds(x + 378, y, 74, 26);
+                FillMinuteCombo(minuteCombo, safeValue.Minute);
+                Controls.Add(minuteCombo);
+            }
+
+            private DateTime ClampDialogDate(DateTime value)
+            {
+                DateTime min = new DateTime(2000, 1, 1);
+                DateTime max = DateTime.Now.AddMinutes(1);
+                if (value < min)
+                {
+                    return min;
+                }
+
+                if (value > max)
+                {
+                    return max;
+                }
+
+                return value;
+            }
+
+            private Button MakeDialogButton(string text, bool primary)
+            {
+                Button button = new Button();
+                button.Text = text;
+                button.FlatStyle = FlatStyle.Flat;
+                button.FlatAppearance.BorderColor = primary ? AccentSoft : Border;
+                button.FlatAppearance.MouseOverBackColor = primary ? Color.FromArgb(28, 190, 210) : Color.FromArgb(33, 78, 118);
+                button.FlatAppearance.MouseDownBackColor = primary ? Color.FromArgb(15, 145, 168) : Color.FromArgb(19, 47, 78);
+                button.BackColor = primary ? AccentSoft : SurfaceSoft;
+                button.ForeColor = primary ? Color.FromArgb(2, 6, 23) : TextMain;
+                button.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
+                return button;
+            }
+
+            private void FillHourCombo(ComboBox combo, int selectedHour)
+            {
+                combo.Items.Clear();
+                for (int hour = 0; hour < 24; hour++)
+                {
+                    combo.Items.Add(hour.ToString("00", CultureInfo.InvariantCulture));
+                }
+
+                combo.SelectedIndex = Math.Max(0, Math.Min(23, selectedHour));
+            }
+
+            private void FillMinuteCombo(ComboBox combo, int selectedMinute)
+            {
+                combo.Items.Clear();
+                for (int minute = 0; minute < 60; minute += 5)
+                {
+                    combo.Items.Add(minute.ToString("00", CultureInfo.InvariantCulture));
+                }
+
+                int rounded = (int)Math.Round(selectedMinute / 5.0) * 5;
+                if (rounded >= 60)
+                {
+                    rounded = 55;
+                }
+
+                combo.SelectedIndex = Math.Max(0, Math.Min(combo.Items.Count - 1, rounded / 5));
+            }
+
+            private DateTime ComposeDateTime(DateTimePicker datePicker, ComboBox hourCombo, ComboBox minuteCombo)
+            {
+                int hour = ParseComboNumber(hourCombo, 0);
+                int minute = ParseComboNumber(minuteCombo, 0);
+                DateTime date = datePicker.Value.Date;
+                return new DateTime(date.Year, date.Month, date.Day, hour, minute, 0);
+            }
+
+            private int ParseComboNumber(ComboBox combo, int fallback)
+            {
+                int value;
+                string text = combo == null ? "" : Convert.ToString(combo.SelectedItem, CultureInfo.InvariantCulture);
+                return Int32.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out value) ? value : fallback;
+            }
+
+            private void ApplyRange()
+            {
+                DateTime start = ComposeDateTime(_startDatePicker, _startHourCombo, _startMinuteCombo);
+                DateTime end = ComposeDateTime(_endDatePicker, _endHourCombo, _endMinuteCombo);
+                if (end <= start)
+                {
+                    _statusLabel.Text = UiText.Pick(_englishUi, "La fecha final debe ser mayor que la inicial.", "End must be later than start.");
+                    return;
+                }
+
+                StartValue = start;
+                EndValue = end;
+                DialogResult = DialogResult.OK;
+                Close();
+            }
         }
 
         private sealed class DeviceManagementDialog : Form
